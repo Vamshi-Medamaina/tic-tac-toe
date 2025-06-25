@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { use, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -13,17 +13,48 @@ function App() {
 }
 
 function Game(){
-  
 
+  //const [xIsNext,setXIsNext]=  useState(true);
+  const [history,setHistory] =  useState([Array(9).fill(null)]);
+  const [currentMove,setCurrentMove] = useState(0);
+  const currentSquares = history[currentMove];
+  const xIsNext=currentMove%2===0;
+
+  function handlePlay(nextSquares){
+    const nextHistory=[...history.slice(0,currentMove+1),nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length-1);
+    //setXIsNext(!xIsNext);
+  }
+
+  function jumpTo(nextMove){
+    setCurrentMove(nextMove);
+    //setXIsNext(nextMove % 2 ===0);
+  }
+
+  const moves=history.map((squares,move)=>{
+    let description;
+    if(move>0){
+      description="Go to move #"+move;
+    }else{
+      description="Go to game start";
+    }
+
+    return (
+      <li key={move}>
+        <button  className="bg-blue-500 hover:bg-fuchsia-500 mt-1 text-white px-2 py-1 rounded" onClick={()=>{jumpTo(move)}}>{description}</button>
+      </li>
+    );
+  });
 
   return(
     <>
     <div>
-      <div className='game'>
-        <Board />
+      <div className='game-board'>
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay}/>
       </div>
       <div className='game-info'>
-        <ol></ol>
+        <ol>{moves}</ol>
       </div>
     </div>
     </>
@@ -31,9 +62,8 @@ function Game(){
 }
 
 
-function Board(){
-  const [xIsNext,setXIsNext] = new useState(true);
-  const [squares,setSquares]= new useState(Array(9).fill(null));
+function Board({xIsNext,squares,onPlay}){
+
 
   function handleClick(i){
     const nextSquares = squares.slice();
@@ -46,8 +76,7 @@ function Board(){
     else{
       nextSquares[i]="O";
     }
-    setSquares(nextSquares);
-    setXIsNext(!xIsNext);
+    onPlay(nextSquares);
   }
 
   const winner=calculateWinner(squares);
@@ -84,7 +113,7 @@ function Board(){
 function Square({value,onSquareClick}){
 
   return(
-    <button onClick={onSquareClick} className='w-12 h-12  bg-white-300 border-black outline text-4xl'>{value}</button>
+    <button onClick={onSquareClick} className='w-12 h-12  bg-white border border-black text-4xl'>{value}</button>
   )
 }
 
